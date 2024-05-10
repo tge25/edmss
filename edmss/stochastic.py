@@ -160,6 +160,7 @@ def edm_sampler(
             min(S_churn / num_steps, np.sqrt(2) - 1) if S_min <= t_cur <= S_max else 0
         )
         t_hat = net.round_sigma(t_cur + gamma * t_cur)
+        print(t_hat**2 - t_cur**2)
         x_hat = x_cur + (t_hat**2 - t_cur**2).sqrt() * S_noise * randn_like(x_cur)
 
         # Euler step. Perform patching operation on score tensor if patch-based generation is used
