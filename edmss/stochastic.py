@@ -119,7 +119,7 @@ def edm_sampler(
     # Adjust noise levels based on what's supported by the network.
     "Proposed EDM sampler (Algorithm 2) with minor changes to enable super-resolution."
     sigma_min = max(sigma_min, net.sigma_min)
-    sigma_max = min(sigma_max, net.sigma_max)
+    #sigma_max = min(sigma_max, net.sigma_max)
 
     # Time step discretization.
     step_indices = torch.arange(num_steps, dtype=torch.float64, device=latents.device)
