@@ -120,9 +120,9 @@ def edm_sampler(
     #sigma_max = min(sigma_max, net.sigma_max)
 
     if isinstance(img_shape, tuple):
-        img_shape_y, img_shape_x = img_shape
+        img_shape_x, img_shape_y = img_shape
     else:
-        img_shape_y = img_shape_x = img_shape
+        img_shape_x = img_shape_y = img_shape
 
     # Time step discretization.
     step_indices = torch.arange(num_steps, dtype=torch.float64, device=latents.device)
