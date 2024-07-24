@@ -100,8 +100,7 @@ def edm_sampler(
     img_lr,
     class_labels=None,
     randn_like=torch.randn_like,
-    img_shape_y=448,
-    img_shape_x=448, 
+    img_shape=448,
     patch_shape=448, 
     overlap_pix=4, 
     boundary_pix=2, 
@@ -119,6 +118,11 @@ def edm_sampler(
     "Proposed EDM sampler (Algorithm 2) with minor changes to enable super-resolution."
     sigma_min = max(sigma_min, net.sigma_min)
     #sigma_max = min(sigma_max, net.sigma_max)
+
+    if isinstance(img_shape, tuple):
+        img_shape_x, img_shape_y = img_shape
+    else:
+        img_shape_x = img_shape_y = img_shape
 
     # Time step discretization.
     step_indices = torch.arange(num_steps, dtype=torch.float64, device=latents.device)
