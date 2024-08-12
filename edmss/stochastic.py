@@ -175,7 +175,6 @@ def edm_sampler(
             x_hat_batch = image_batching(x_hat, img_shape_y, img_shape_x, patch_shape, patch_shape, batch_size, overlap_pix, boundary_pix)
         else:
             x_hat_batch = x_hat
-        print(x_hat_batch.shape, x_lr.shape)
         denoised = net(x_hat_batch, x_lr, t_hat, class_labels, lead_time_label=lead_time_label, global_index=global_index).to(torch.float64)
         if (patch_shape!=img_shape_x or patch_shape!=img_shape_y):
             denoised = image_fuse(denoised, img_shape_y, img_shape_x, patch_shape, patch_shape, batch_size, overlap_pix, boundary_pix)     
