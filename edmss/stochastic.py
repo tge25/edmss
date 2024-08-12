@@ -17,7 +17,8 @@ def image_batching(input,
         batch_size,
         overlap_pix,
         boundary_pix,
-        input_interp=None):
+        input_interp=None
+        ):
     '''
     full image --> batch of patched image
     batch_size: original batch size without patching
@@ -105,6 +106,7 @@ def edm_sampler(
     overlap_pix=4, 
     boundary_pix=2, 
     mean_hr=None,
+    lead_time_label=None,
     num_steps=18,
     sigma_min=0.002,
     sigma_max=800,
@@ -168,13 +170,13 @@ def edm_sampler(
         if torch.cuda.current_device()==0:
             print(torch.sum(x_cur**2), torch.sum(x_hat**2))
         # Euler step. Perform patching operation on score tensor if patch-based generation is used
-        # denoised = net(x_hat, t_hat, class_labels).to(torch.float64)    #x_lr
+        # denoised = net(x_hat, t_hat, class_labels,lead_time_label=lead_time_label).to(torch.float64)    #x_lr
         
         if (patch_shape!=img_shape_x or patch_shape!=img_shape_y):
             x_hat_batch = image_batching(x_hat, img_shape_y, img_shape_x, patch_shape, patch_shape, batch_size, overlap_pix, boundary_pix)
         else:
             x_hat_batch = x_hat
-        denoised = net(x_hat_batch, x_lr, t_hat, class_labels, global_index=global_index).to(torch.float64)
+        denoised = net(x_hat_batch, x_lr, t_hat, class_labels, lead_time_label=lead_time_label, global_index=global_index).to(torch.float64)
         if (patch_shape!=img_shape_x or patch_shape!=img_shape_y):
             denoised = image_fuse(denoised, img_shape_y, img_shape_x, patch_shape, patch_shape, batch_size, overlap_pix, boundary_pix)     
         d_cur = (x_hat - denoised) / t_hat
@@ -187,7 +189,7 @@ def edm_sampler(
             else:
                 x_next_batch = x_next
             # ask about this fix
-            denoised = net(x_next_batch, x_lr, t_next, class_labels, global_index=global_index).to(torch.float64)
+            denoised = net(x_next_batch, x_lr, t_next, class_labels, lead_time_label=lead_time_label,global_index=global_index).to(torch.float64)
             if (patch_shape!=img_shape_x or patch_shape!=img_shape_y):
                 denoised = image_fuse(denoised, img_shape_y, img_shape_x, patch_shape, patch_shape, batch_size, overlap_pix, boundary_pix)
             d_prime = (x_next - denoised) / t_next
