@@ -176,6 +176,7 @@ def edm_sampler(
         else:
             x_hat_batch = x_hat
         denoised = net(x_hat_batch, x_lr, t_hat, class_labels, lead_time_label=lead_time_label, global_index=global_index).to(torch.float64)
+        denoised[:,4:] = denoised[:,4:].softmax(dim=1)
         if (patch_shape!=img_shape_x or patch_shape!=img_shape_y):
             denoised = image_fuse(denoised, img_shape_y, img_shape_x, patch_shape, patch_shape, batch_size, overlap_pix, boundary_pix)     
         d_cur = (x_hat - denoised) / t_hat
@@ -189,6 +190,7 @@ def edm_sampler(
                 x_next_batch = x_next
             # ask about this fix
             denoised = net(x_next_batch, x_lr, t_next, class_labels, lead_time_label=lead_time_label,global_index=global_index).to(torch.float64)
+            denoised[:,4:] = denoised[:,4:].softmax(dim=1)
             if (patch_shape!=img_shape_x or patch_shape!=img_shape_y):
                 denoised = image_fuse(denoised, img_shape_y, img_shape_x, patch_shape, patch_shape, batch_size, overlap_pix, boundary_pix)
             d_prime = (x_next - denoised) / t_next
