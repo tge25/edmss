@@ -158,6 +158,7 @@ def edm_sampler(
             
     # Main sampling loop.
     x_next = latents.to(torch.float64) * t_steps[0]
+    print("S_churn", S_churn)
     for i, (t_cur, t_next) in enumerate(zip(t_steps[:-1], t_steps[1:])):  # 0, ..., N-1
         x_cur = x_next
         # Increase noise temporarily.
@@ -166,7 +167,8 @@ def edm_sampler(
         )
         t_hat = net.round_sigma(t_cur + gamma * t_cur)
 
-        x_hat = x_cur + (t_hat**2 - t_cur**2).sqrt() * S_noise * randn_like(x_cur)        
+        x_hat = x_cur + (t_hat**2 - t_cur**2).sqrt() * S_noise * randn_like(x_cur)   
+        print("add noise magnitude", (t_hat**2 - t_cur**2).sqrt() * S_noise)
 
         # Euler step. Perform patching operation on score tensor if patch-based generation is used
         # denoised = net(x_hat, t_hat, class_labels,lead_time_label=lead_time_label).to(torch.float64)    #x_lr
