@@ -72,9 +72,9 @@ def image_fuse(input,
     pad_y_right = padded_shape_y - img_shape_y - boundary_pix
     residual_x = patch_shape_x - pad_x_right # residual pixels in the last patch
     residual_y = patch_shape_y - pad_y_right # residual pixels in the last patch
-    output = torch.zeros(batch_size, input.shape[1], img_shape_y, img_shape_x).cuda()
-    one_map = torch.ones(1, 1, input.shape[2], input.shape[3]).cuda()
-    count_map = torch.zeros(1, 1, img_shape_y, img_shape_x).cuda() # to count the overlapping times
+    output = torch.zeros(batch_size, input.shape[1], img_shape_y, img_shape_x, device=input.device)
+    one_map = torch.ones(1, 1, input.shape[2], input.shape[3], device=input.device)
+    count_map = torch.zeros(1, 1, img_shape_y, img_shape_x, device=input.device) # to count the overlapping times
 
     for x_index in range(patch_num_x):
         for y_index in range(patch_num_y): 
@@ -175,8 +175,14 @@ def edm_sampler(
             x_hat_batch = image_batching(x_hat, img_shape_y, img_shape_x, patch_shape, patch_shape, batch_size, overlap_pix, boundary_pix)
         else:
             x_hat_batch = x_hat
+        
+        x_hat_batch = x_hat_batch.to(latents.device)
+        x_lr = x_lr.to(latents.device)
+        global_index = global_index.to(latents.device)
+        # print(x_hat_batch.device, x_hat.device, x_lr.device, t_hat.device, class_labels, global_index.device, lead_time_label)
         denoised = net(x_hat_batch, x_lr, t_hat, class_labels, lead_time_label=lead_time_label, global_index=global_index).to(torch.float64)
         if (patch_shape!=img_shape_x or patch_shape!=img_shape_y):
+            # print(denoised.device, img_shape_y, img_shape_x, patch_shape, patch_shape, batch_size, overlap_pix, boundary_pix)
             denoised = image_fuse(denoised, img_shape_y, img_shape_x, patch_shape, patch_shape, batch_size, overlap_pix, boundary_pix)     
         d_cur = (x_hat - denoised) / t_hat
         x_next = x_hat + (t_next - t_hat) * d_cur
@@ -188,6 +194,7 @@ def edm_sampler(
             else:
                 x_next_batch = x_next
             # ask about this fix
+            x_next_batch = x_next_batch.to(latents.device)
             denoised = net(x_next_batch, x_lr, t_next, class_labels, lead_time_label=lead_time_label,global_index=global_index).to(torch.float64)
             if (patch_shape!=img_shape_x or patch_shape!=img_shape_y):
                 denoised = image_fuse(denoised, img_shape_y, img_shape_x, patch_shape, patch_shape, batch_size, overlap_pix, boundary_pix)
