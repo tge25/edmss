@@ -31,14 +31,14 @@ def image_batching(input,
     padded_shape_y = (patch_shape_y-overlap_pix-boundary_pix) * (patch_num_y-1) + patch_shape_y + boundary_pix
     pad_x_right = padded_shape_x - img_shape_x - boundary_pix
     pad_y_right = padded_shape_y - img_shape_y - boundary_pix
-    input_padded = torch.zeros(input.shape[0], input.shape[1], padded_shape_y, padded_shape_x).cuda()
-    image_padding = torch.nn.ReflectionPad2d((boundary_pix, pad_x_right, boundary_pix, pad_y_right)).cuda() #(padding_left,padding_right,padding_top,padding_bottom)
+    input_padded = torch.zeros(input.shape[0], input.shape[1], padded_shape_y, padded_shape_x).to(input.device)
+    image_padding = torch.nn.ReflectionPad2d((boundary_pix, pad_x_right, boundary_pix, pad_y_right)).to(input.device) #(padding_left,padding_right,padding_top,padding_bottom)
     input_padded = image_padding(input)
     patch_num = patch_num_x*patch_num_y
     if input_interp is not None:
-        output = torch.zeros(patch_num*batch_size, input.shape[1]+input_interp.shape[1], patch_shape_y, patch_shape_x).cuda()
+        output = torch.zeros(patch_num*batch_size, input.shape[1]+input_interp.shape[1], patch_shape_y, patch_shape_x).to(input.device)
     else:
-        output = torch.zeros(patch_num*batch_size, input.shape[1], patch_shape_y, patch_shape_x).cuda() 
+        output = torch.zeros(patch_num*batch_size, input.shape[1], patch_shape_y, patch_shape_x).to(input.device)
     for x_index in range(patch_num_x):
         for y_index in range(patch_num_y): 
             x_start = x_index*(patch_shape_x-overlap_pix-boundary_pix) 
