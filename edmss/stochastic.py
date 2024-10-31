@@ -149,13 +149,15 @@ def edm_sampler(
     if mean_hr is not None:
         x_lr = torch.cat((mean_hr.expand(x_lr.shape[0], -1, -1, -1), x_lr), dim=1)
     global_index = None        
-        
+      
     # input and position padding + patching
     if (patch_shape!=img_shape_x or patch_shape!=img_shape_y):
         input_interp = torch.nn.functional.interpolate(img_lr, (patch_shape, patch_shape), mode='bilinear') 
         x_lr = image_batching(x_lr, img_shape_y, img_shape_x, patch_shape, patch_shape, batch_size, overlap_pix, boundary_pix, input_interp)
         global_index = image_batching(grid.float(), img_shape_y, img_shape_x, patch_shape, patch_shape, batch_size, overlap_pix, boundary_pix).int() 
-            
+        print("before loop input_interp", input_interp[0,:,:10,:10]) 
+        print("before loop x_lr", x_lr[0,:,:10,:10])
+        print("before loop global_index", global_index[0,:,:10,:10])    
     # Main sampling loop.
     x_next = latents.to(torch.float64) * t_steps[0]
     for i, (t_cur, t_next) in enumerate(zip(t_steps[:-1], t_steps[1:])):  # 0, ..., N-1
@@ -179,13 +181,18 @@ def edm_sampler(
         x_hat_batch = x_hat_batch.to(latents.device)
         x_lr = x_lr.to(latents.device)
         global_index = global_index.to(latents.device)
+        print(i, "before denoise x_hat_batch", x_hat_batch[0,:,:10,:10])
+        print(i, "before denoise x_lr", x_lr[0,:,:10,:10])
         # print(x_hat_batch.device, x_hat.device, x_lr.device, t_hat.device, class_labels, global_index.device, lead_time_label)
+        print(i, "after denoise denoised", denoised[0,:,:10,:10])
         denoised = net(x_hat_batch, x_lr, t_hat, class_labels, lead_time_label=lead_time_label, global_index=global_index).to(torch.float64)
         if (patch_shape!=img_shape_x or patch_shape!=img_shape_y):
             # print(denoised.device, img_shape_y, img_shape_x, patch_shape, patch_shape, batch_size, overlap_pix, boundary_pix)
             denoised = image_fuse(denoised, img_shape_y, img_shape_x, patch_shape, patch_shape, batch_size, overlap_pix, boundary_pix)     
         d_cur = (x_hat - denoised) / t_hat
         x_next = x_hat + (t_next - t_hat) * d_cur
+        print(i, "after image_fuse denoised", denoised[0,:,:10,:10])
+        print(i, "x_next", x_next[0,:,:10,:10])
 
         # Apply 2nd order correction.
         if i < num_steps - 1:
