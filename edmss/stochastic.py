@@ -184,11 +184,12 @@ def edm_sampler(
         print(i, "before denoise x_hat_batch", x_hat_batch[0,:,:10,:10])
         print(i, "before denoise x_lr", x_lr[0,:,:10,:10])
         # print(x_hat_batch.device, x_hat.device, x_lr.device, t_hat.device, class_labels, global_index.device, lead_time_label)
-        print(i, "after denoise denoised", denoised[0,:,:10,:10])
+        
         denoised = net(x_hat_batch, x_lr, t_hat, class_labels, lead_time_label=lead_time_label, global_index=global_index).to(torch.float64)
         if (patch_shape!=img_shape_x or patch_shape!=img_shape_y):
             # print(denoised.device, img_shape_y, img_shape_x, patch_shape, patch_shape, batch_size, overlap_pix, boundary_pix)
             denoised = image_fuse(denoised, img_shape_y, img_shape_x, patch_shape, patch_shape, batch_size, overlap_pix, boundary_pix)     
+            print(i, "after denoise denoised", denoised[0,:,:10,:10])    
         d_cur = (x_hat - denoised) / t_hat
         x_next = x_hat + (t_next - t_hat) * d_cur
         print(i, "after image_fuse denoised", denoised[0,:,:10,:10])
