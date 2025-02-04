@@ -120,7 +120,7 @@ def edm_sampler(
     "Proposed EDM sampler (Algorithm 2) with minor changes to enable super-resolution."
     sigma_min = max(sigma_min, net.sigma_min)
     #sigma_max = min(sigma_max, net.sigma_max)
-
+    print(sigma_max, sigma_min)
     if isinstance(img_shape, tuple):
         img_shape_x, img_shape_y = img_shape
     else:
