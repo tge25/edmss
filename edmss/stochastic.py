@@ -157,6 +157,7 @@ def edm_sampler(
         global_index = image_batching(grid.float(), img_shape_y, img_shape_x, patch_shape, patch_shape, batch_size, overlap_pix, boundary_pix).int()   
     # Main sampling loop.
     x_next = latents.to(torch.float64) * t_steps[0]
+    x_next[:,:5] *= 0.25
     for i, (t_cur, t_next) in enumerate(zip(t_steps[:-1], t_steps[1:])):  # 0, ..., N-1
         x_cur = x_next
         # Increase noise temporarily.
