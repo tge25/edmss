@@ -158,6 +158,7 @@ def edm_sampler(
     # Main sampling loop.
     x_next = latents.to(torch.float64) * t_steps[0]
     x_next[:,:5] *= 0.25
+    print("per_channel sampler used")
     for i, (t_cur, t_next) in enumerate(zip(t_steps[:-1], t_steps[1:])):  # 0, ..., N-1
         x_cur = x_next
         # Increase noise temporarily.
