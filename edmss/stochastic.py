@@ -157,7 +157,7 @@ def edm_sampler(
         global_index = image_batching(grid.float(), img_shape_y, img_shape_x, patch_shape, patch_shape, batch_size, overlap_pix, boundary_pix).int()   
     # Main sampling loop.
     x_next = latents.to(torch.float64) * t_steps[0]
-    x_next[:,:5] *= 0.25
+    #x_next[:,:5] *= 0.25
     print("per_channel sampler used")
     for i, (t_cur, t_next) in enumerate(zip(t_steps[:-1], t_steps[1:])):  # 0, ..., N-1
         x_cur = x_next
@@ -167,7 +167,7 @@ def edm_sampler(
         )
         t_hat = net.round_sigma(t_cur + gamma * t_cur)
 
-        x_hat = x_cur + (t_hat**2 - t_cur**2).sqrt() * S_noise * randn_like(x_cur)        
+        x_hat = x_cur + (t_hat**2 - t_cur**2).sqrt() * S_noise * randn_like(x_cur)   
 
         # Euler step. Perform patching operation on score tensor if patch-based generation is used
         # denoised = net(x_hat, t_hat, class_labels,lead_time_label=lead_time_label).to(torch.float64)    #x_lr
@@ -182,7 +182,7 @@ def edm_sampler(
         global_index = global_index.to(latents.device)
         # print(x_hat_batch.device, x_hat.device, x_lr.device, t_hat.device, class_labels, global_index.device, lead_time_label)
         
-        denoised = net(x_hat_batch, x_lr, t_hat, class_labels, lead_time_label=lead_time_label, global_index=global_index).to(torch.float64)
+        denoised = net(x_hat_batch, x_lr, torch.ones([x_hat.shape[0],16,1,1])*t_hat, class_labels, lead_time_label=lead_time_label, global_index=global_index).to(torch.float64)
         if (patch_shape!=img_shape_x or patch_shape!=img_shape_y):
             # print(denoised.device, img_shape_y, img_shape_x, patch_shape, patch_shape, batch_size, overlap_pix, boundary_pix)
             denoised = image_fuse(denoised, img_shape_y, img_shape_x, patch_shape, patch_shape, batch_size, overlap_pix, boundary_pix)       
@@ -197,7 +197,7 @@ def edm_sampler(
                 x_next_batch = x_next
             # ask about this fix
             x_next_batch = x_next_batch.to(latents.device)
-            denoised = net(x_next_batch, x_lr, t_next, class_labels, lead_time_label=lead_time_label,global_index=global_index).to(torch.float64)
+            denoised = net(x_next_batch, x_lr, torch.ones([x_hat.shape[0],16,1,1])*t_next, class_labels, lead_time_label=lead_time_label,global_index=global_index).to(torch.float64)
             if (patch_shape!=img_shape_x or patch_shape!=img_shape_y):
                 denoised = image_fuse(denoised, img_shape_y, img_shape_x, patch_shape, patch_shape, batch_size, overlap_pix, boundary_pix)
             d_prime = (x_next - denoised) / t_next
